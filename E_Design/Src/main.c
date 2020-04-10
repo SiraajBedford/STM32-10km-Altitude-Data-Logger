@@ -80,12 +80,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-
 I2C_HandleTypeDef hi2c1;
-
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
-
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
@@ -226,7 +223,6 @@ int main(void)
 
 	__HAL_UART_ENABLE_IT(&huart1 , UART_IT_RXNE);
 	HAL_UART_Receive_IT(&huart1 , (uint8_t*)&rec_data , 1);
-	//HAL_UART_Receive_IT(&huart1 , (uint8_t*)rec_data , 1 );
 
 	__HAL_TIM_ENABLE(&htim3);
 	__HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
@@ -697,7 +693,7 @@ void Error_Handler(void)
  * @retval None
  */
 void assert_failed(char *file, uint32_t line)
-{ 
+{
 	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
