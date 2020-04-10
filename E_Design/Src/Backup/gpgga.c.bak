@@ -1,0 +1,255 @@
+/*
+ * gpgga.c
+ *
+ *  Created on: 23 Apr 2019
+ *      Author: 21093741
+ */
+#include <stdio.h>
+#include <math.h>
+#include <inttypes.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "auxilliary.h"
+
+
+char output[15][100];
+char other[15][100];
+char chk[1][2];
+char store[1][2];
+char tim[1][9];
+char alt[1][7];
+char message_type[1][100];
+char time_struct[1][100];
+char betweenStopAndStart[1][100];
+
+
+
+struct message SplitIntoFieldsWithAlgorithm(char output[15][100], char* input){
+
+
+	int s=0;
+	int r=0;
+	int q=0;
+
+	while(input[s] != '\r'){
+
+		if((input[s] != ',')|| (input[s] == '\r')){
+			if(input[s] != '\n'){
+				output[r][q] = input[s];
+				q++;
+			}
+		}
+
+		else if ((input[s] == ',') || (input[s] == '\r')){
+			// printf("\n%s\n", output[r]);
+			q=0;
+			r++;
+		}
+		s++;
+	}
+
+	s=0;
+
+	while(input[s] != '*'){s++;}
+	char hope[5];
+	strncpy(hope, input+s, 3);
+    hope[4] = '\0';
+
+	int p=0;
+
+	for(p=0; p<3;p++){
+		output[14][p] = hope[p];
+	}
+
+	struct message current;
+
+	current.MessageType = output[0];
+	current.Time = output[1];
+	current.Latitude = output[2];
+	current.LatitudeIndicator = output[3][0];
+	current.Longitude = output[4];
+	current.LongitudeIndicator = output[5][0];
+	current.Altitude = output[9];
+	current.Checksum = output[14];
+
+	return current;
+
+}
+
+int returnChecksumCalculation(char betweenStopAndStart[1][100], char input[]){
+
+	int character = 0;//character counter
+	int row=0;//row counter
+	int col=0;//column counter
+
+	while(input[character] != '*'){
+		if((input[character] != '$')){
+			betweenStopAndStart[row][col] = input[character];
+			col++;
+		}
+		character++;
+	}
+
+	int c = 0;
+
+	char *s = *betweenStopAndStart;
+
+	while(*s){
+		c ^= *s++;
+	}
+
+	return c;//return the checksum
+}
+
+
+int returnChecksumValueFromInputString(char input[]){
+
+	int s=0;
+
+	while(input[s] != '*'){s++;}
+
+	//printf("s: %d\n\n",s);
+
+	char returncheck_hex[3];
+
+	strncpy(returncheck_hex,input+s+1,2);
+
+	//returncheck_hex[2] = '/0';
+
+	//printf("returncheck_hex: %s\n\n",returncheck_hex);
+
+	//int r = atoi(returncheck_hex);
+
+	const char *hexstring = returncheck_hex;
+	int keep = (int)strtol(hexstring, NULL, 16);
+
+	//printf("keep = %d\n\n",keep);
+
+
+return keep;
+}
+
+double returnLatitude(char* Latitude, char LatitudeIndicator){
+
+	double num = strtod(Latitude,NULL);
+	//printf("num:%f", num);
+	double degrees = floor(num/100);
+	//printf("degrees:%f\n", degrees);
+	double b4_conv = (num-degrees*100);
+	//printf("b4_conv:%f\n", b4_conv);
+	double aft_conv = b4_conv/60.000000;
+	//printf("aft_conv:%f\n", aft_conv);
+	double fin_degrees = degrees + aft_conv;
+	//printf("fin_degrees:%f\n\n\n\n", fin_degrees);
+	double new=0.0;
+
+
+	// return 1.000000;
+
+	if(LatitudeIndicator == 'N'){new = fin_degrees;}
+	if(LatitudeIndicator == 'S'){new = -1*fin_degrees;}
+
+	//printf("new: %f", new);
+    return new;
+}
+
+
+
+double returnLongitude(char* Longitude, char LongitudeIndicator){
+
+	double num = strtod(Longitude,NULL);
+	//printf("num:%f", num);
+	double degrees = floor(num/100);
+	//printf("degrees:%f\n", degrees);
+	double b4_conv = (num-degrees*100);
+	//printf("b4_conv:%f\n", b4_conv);
+	double aft_conv = b4_conv/60.000000;
+	//printf("aft_conv:%f\n", aft_conv);
+	double fin_degrees = degrees + aft_conv;
+	//printf("fin_degrees:%f\n", fin_degrees);
+	double new = 0.0;
+	// return 1.000000;
+
+
+	if(LongitudeIndicator == 'E'){new = fin_degrees;}
+	if(LongitudeIndicator == 'W'){new = -1*fin_degrees;}
+
+	//Longitude -> 11 spaces accomodate for negative as well
+	//printf("new: %f", new);
+
+	return new;
+
+}
+
+double returnAltitude(char* Altitude){
+
+    return strtod(Altitude,NULL);
+
+}
+
+
+
+char* TimeFormatter(char tim[1][9],char* UTC){
+
+
+	char hour[3]={0};
+	char min[3]={0};
+	char sec[3]={0};
+
+	int time = atoi(UTC);
+
+	char timeStr[10] = {0};
+
+	sprintf(timeStr, "%06d", time);
+
+	memcpy(hour, timeStr, 2);
+	memcpy(min, timeStr+2,2);
+	memcpy(sec, timeStr+4,2);
+
+	char Final[9];
+
+	Final[0] = hour[0];
+	Final[1] = hour[1];
+	Final[2] = ':';
+	Final[3] = min[0];
+	Final[4] = min[1];
+	Final[5] = ':';
+	Final[6] = sec[0];
+	Final[7] = sec[1];
+	Final[8] = '\0';
+
+	int character = 0;//character counter
+	int row=0;//row counter
+	int col=0;//column counter
+
+	while(Final[character] != '\0'){
+
+		tim[row][col] = Final[character];
+		col++;
+
+		character++;
+	}
+
+	tim[1][9] = '/0';
+
+	return tim[row];
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

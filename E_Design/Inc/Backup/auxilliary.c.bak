@@ -1,0 +1,226 @@
+/*
+ * auxilliary.c
+ *
+ *  Created on: 28 Feb 2019
+ *      Author: 20797540
+ */
+
+
+#include "stm32f3xx_it.h"
+#include "auxilliary.h"
+#include "main.h"
+#include "string.h"
+#include "stdlib.h"
+
+float longitude;
+float latitude;
+float altitude ;
+char hour[3] = "00";
+char sec[3]="00";
+char min[3]="00";
+volatile uint8_t flag;
+int lasttick ;
+char output_string [91];
+int student_num;
+char GPGGA_string [75] = "\0";
+char Time[8];
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
+
+
+
+
+
+void var_init()
+{
+	/* USER CODE BEGIN 2 */
+	lasttick = 0;
+	student_num = 20797540;
+	flag = 0;
+	longitude = 0;
+	latitude = 0;
+	altitude = 0;
+	GPS_array_clear();
+
+}
+
+
+void GPS_array_clear()
+{
+	int i;
+	for(i = 0 ; i < sizeof(GPGGA_string) ; i++)
+	{
+		GPGGA_string[i] = 0;
+	}
+}
+
+
+void StringPrint()
+{
+	if (flag == 1)
+	{
+
+		lasttick = HAL_GetTick();
+		sprintf(output_string , "$%8d,%5d,%2s:%2s:%2s,  0,  0,  0,0000,   0,   0,%10f,%11f,%7.1f,  0,  0\n" , student_num , lasttick/1000 , hour , min , sec , latitude,longitude,altitude);
+
+
+		//sprintf(output_string, "$%8d,%5d\n", student_num, lasttick/1000,0);
+		//HAL_UART_Transmit_IT(&huart1, (uint8_t*)output_string, 91);
+		//HAL_UART_Transmit(&huart1, (uint8_t*)output_string, 91, 1000);
+		HAL_UART_Transmit(&huart1, (uint8_t*)output_string, 91, 1000);
+
+
+		flag = 0;
+
+
+		GPS_array_clear();
+
+	}
+}
+
+void BurnRelease()
+{
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 0);
+	HAL_Delay(2000);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, 1);
+	HAL_Delay(2000);
+}
+
+
+
+
+void GPSReceive()
+{
+	HAL_UART_Receive(&huart1, (uint8_t*)GPGGA_string,79 , 1000 );
+
+}
+
+
+
+int check_sum(const char *s)
+{
+
+	int i =0;
+	char tempStr[71];
+	char checkSum[3];
+	strcpy(tempStr , s);
+
+
+	while(tempStr[i] != '*')
+	{
+		i++;
+	}
+
+    strncpy(checkSum , tempStr+ i+1 , 2);
+    checkSum[2] = '\0';
+
+	strncpy(tempStr , s , i);
+	tempStr[i] = '\0';
+
+
+    int c = 0;
+    i = 1;
+    while(tempStr[i] != '\0')
+    {
+        c ^= tempStr[i];
+        i++;
+    }
+
+    return (c==(int)strtol(checkSum, NULL, 16));
+}
+
+void GPGGA_Split(const char *s)
+{
+
+	char time_c[10];
+
+	char GPGGA[71];
+	strcpy(GPGGA , s);
+	const char delimeter[2] = ",";
+	char *token;
+	char temp[10];
+
+
+
+
+	char GPGGA2[71];
+	strcpy(GPGGA2 , s);
+	char *token2;
+
+
+
+
+	token = strtok(GPGGA, delimeter);// take out $GPGGA
+
+	token = strtok(NULL, delimeter); //time
+		strcpy(time_c, token);//take out time
+	strncpy(hour, time_c, 2);
+	strncpy(min, time_c+2, 2);
+	strncpy(sec, time_c+4, 2);
+
+	token = strtok(NULL, delimeter);
+		strcpy(temp, token);
+
+
+	//begin latitude
+	char lat_deg_char[3];
+	char lat_mins_char[8];
+	strncpy(lat_deg_char, temp, 2);
+	strncpy(lat_mins_char, temp+2, 8);
+
+	latitude = atof(lat_deg_char) + atof(lat_mins_char)/60 ;
+
+	token = strtok(NULL, delimeter);
+	strcpy(temp, token);
+
+	if(*temp == 'S')
+	{
+		latitude *= -1;
+	}
+
+
+	//begin longitude
+	token = strtok(NULL, delimeter);
+
+	strcpy(temp, token);
+
+	char long_deg_char[4];
+	char long_mins_char[8];
+
+	strncpy(long_deg_char, temp, 3);
+	strncpy(long_mins_char, temp+3, 8);
+
+	longitude = atof(long_deg_char) + atof(long_mins_char)/60 ;
+
+	token = strtok(NULL, delimeter);
+
+	strcpy(temp, token);
+
+	if(*temp == 'W')
+	{
+		longitude *= -1;
+	}
+
+	token2 = strtok(GPGGA2, delimeter);// take out $GPGGA
+	token2 = strtok(NULL, delimeter); //time
+	token2 = strtok(NULL, delimeter); //lat
+	token2 = strtok(NULL, delimeter);
+	token2 = strtok(NULL, delimeter); //long
+	token2 = strtok(NULL, delimeter);
+
+	token2 = strtok(NULL, delimeter); //ting
+	token2 = strtok(NULL, delimeter); //ting
+	token2 = strtok(NULL, delimeter); //ting
+	token2 = strtok(NULL, delimeter); //ting
+	altitude = atof(token2);
+	GPS_array_clear();
+
+
+}
+
+
+
+
+
+
+

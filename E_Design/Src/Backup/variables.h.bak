@@ -1,0 +1,14 @@
+/*
+ * variables.h
+ *
+ *  Created on: 20 Feb 2019
+ *      Author: 20797540
+ */
+
+#ifndef VARIABLES_H_
+#define VARIABLES_H_
+
+
+volatile uint8_t flag = 0;
+
+#endif /* VARIABLES_H_ */
