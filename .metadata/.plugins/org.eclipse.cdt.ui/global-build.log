@@ -1,0 +1,8 @@
+17:19:09 **** Clean-only build of configuration Debug for project E_Design ****
+make clean 
+make: *** No rule to make target `clean'.  Stop.
+"make clean" terminated with exit code 2. Build might be incomplete.
+
+**** Build of configuration Debug for project E_Design ****
+
+Nothing to build for project E_Design

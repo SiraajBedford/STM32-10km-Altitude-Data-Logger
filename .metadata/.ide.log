@@ -1,0 +1,10 @@
+2020-09-05 17:16:22,860 [INFO] Activator:176 - 
+
+
+2020-09-05 17:16:22,865 [INFO] Activator:177 - !SESSION log4j initialized
+2020-09-05 17:17:02,465 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] Managed Build system manifest file error: Option com.atollic.truestudio.general.runtimelib.1765017514 uses a null category that is invalid in its context. The option was ignored.
+2020-09-05 17:17:02,482 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] Managed Build system manifest file error: Option com.atollic.truestudio.toolchain_options.mcu.969417715 uses a null category that is invalid in its context. The option was ignored.
+2020-09-05 17:17:02,496 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] Managed Build system manifest file error: Option com.atollic.truestudio.toolchain_options.vendor.1600591583 uses a null category that is invalid in its context. The option was ignored.
+2020-09-05 17:17:03,142 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] Managed Build system manifest file error: Option com.atollic.truestudio.general.runtimelib.56048054 uses a null category that is invalid in its context. The option was ignored.
+2020-09-05 17:17:03,151 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] Managed Build system manifest file error: Option com.atollic.truestudio.toolchain_options.mcu.1817768208 uses a null category that is invalid in its context. The option was ignored.
+2020-09-05 17:17:03,158 [ERROR] LogOutputStream:74 - [STDERR_REDIRECT] Managed Build system manifest file error: Option com.atollic.truestudio.toolchain_options.vendor.502475124 uses a null category that is invalid in its context. The option was ignored.
